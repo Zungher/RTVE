@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RTVE 24h en Vivo</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      overflow: hidden;
+    }
+    #video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      background: black;
+    }
+    #mensaje {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 1.5em;
+      font-family: sans-serif;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="video" controls autoplay muted></video>
+  <div id="mensaje">🔴 Señal no disponible</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const API_URL = "/api/rtve";
+    const video = document.getElementById('video');
+    const mensaje = document.getElementById('mensaje');
+
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.stream_url) {
+          mensaje.style.display = 'block';
+          video.style.display = 'none';
+          return;
+        }
+
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(data.stream_url);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.ERROR, function (event, data) {
+            mensaje.style.display = 'block';
+            video.style.display = 'none';
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = data.stream_url;
+          video.addEventListener('error', () => {
+            mensaje.style.display = 'block';
+            video.style.display = 'none';
+          });
+        } else {
+          mensaje.textContent = "Tu navegador no soporta video en vivo.";
+          mensaje.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        mensaje.textContent = "No se pudo conectar con el servidor.";
+        mensaje.style.display = 'block';
+        video.style.display = 'none';
+      });
+  </script>
+
+</body>
+</html>
