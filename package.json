@@ -2,6 +2,6 @@
   "name": "rtve-stream-api",
   "version": "1.0.0",
   "dependencies": {
-    "puppeteer": "^21.3.8"
+    "puppeteer": "^22.8.2"
   }
 }
